@@ -54,6 +54,18 @@
     });
   }
 
+  /* ── SERVICES DROPDOWN (mobile tap toggle) ── */
+  const navItem = document.querySelector('.nav-item');
+  if (navItem) {
+    const trigger = navItem.querySelector('a');
+    trigger.addEventListener('click', function (e) {
+      if (window.innerWidth <= 768) {
+        e.preventDefault();
+        navItem.classList.toggle('open');
+      }
+    });
+  }
+
   /* ── ACTIVE NAV LINK ── */
   const currentPath = window.location.pathname.split('/').pop() || 'index.html';
   document.querySelectorAll('.primary-nav a').forEach(function (link) {
