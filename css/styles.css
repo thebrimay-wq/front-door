@@ -335,9 +335,33 @@ a:hover .arrow { transform: translateX(3px); }
   margin-left: 0.75rem;
 }
 
+/* Prevent generic nav-link styles from clobbering the button */
+.nav-cta .btn-primary {
+  padding: 0.85rem 2rem;
+  color: #fff;
+}
+
+.nav-cta .btn-primary:hover,
+.nav-cta .btn-primary:focus {
+  color: #fff;
+  background: var(--primary-h);
+  border-color: var(--primary-h);
+}
+
 /* ── NAV DROPDOWN ── */
 .nav-item {
   position: relative;
+}
+
+/* Invisible bridge that fills the gap between trigger and dropdown,
+   preventing hover loss when the cursor crosses the 8px spacing. */
+.nav-item::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 10px;
 }
 
 .nav-item > a {
@@ -368,7 +392,6 @@ a:hover .arrow { transform: translateX(3px); }
   position: absolute;
   top: calc(100% + 8px);
   left: 50%;
-  transform: translateX(-50%);
   min-width: 170px;
   background: #fff;
   border: 1px solid var(--border);
@@ -377,9 +400,12 @@ a:hover .arrow { transform: translateX(3px); }
   padding: 0.5rem;
   opacity: 0;
   visibility: hidden;
-  pointer-events: none;
-  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+  /* Do NOT set pointer-events: none here — visibility:hidden already blocks events.
+     Keeping it out means the 200ms visibility delay below keeps links clickable
+     while the cursor crosses the gap between the trigger and the dropdown. */
   transform: translateX(-50%) translateY(-4px);
+  /* On close: delay visibility so links remain interactive during the fade */
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0s 0.2s;
   z-index: 200;
 }
 
@@ -387,8 +413,9 @@ a:hover .arrow { transform: translateX(3px); }
 .nav-item:focus-within .nav-dropdown {
   opacity: 1;
   visibility: visible;
-  pointer-events: auto;
   transform: translateX(-50%) translateY(0);
+  /* On open: no delay — appear immediately */
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s;
 }
 
 .nav-dropdown a {
@@ -488,7 +515,6 @@ a:hover .arrow { transform: translateX(3px); }
     transform: none;
     opacity: 1;
     visibility: visible;
-    pointer-events: auto;
     box-shadow: none;
     border: none;
     border-left: 2px solid var(--border);
@@ -496,16 +522,25 @@ a:hover .arrow { transform: translateX(3px); }
     background: transparent;
     padding: 0.25rem 0 0.25rem 0.75rem;
     margin-top: 0.25rem;
+    /* Mobile shows/hides via display, not visibility */
     display: none;
+    /* Override desktop close-delay transition — not needed on mobile */
+    transition: none;
   }
 
   .nav-item.open .nav-dropdown { display: block; }
 
   .nav-dropdown a {
+    /* Touch-friendly tap target */
+    min-height: 44px;
+    display: flex !important;
+    align-items: center;
     padding: 0.5rem 0.5rem !important;
     font-size: 0.95rem !important;
     width: 100%;
   }
+
+  .nav-item::after { display: none; }
 }
 
 /* ── HERO ── */

@@ -10,25 +10,35 @@
   const header = document.querySelector('.site-header');
   if (header) {
     function updateHeader() {
-      if (window.scrollY > 12) {
-        header.classList.add('scrolled');
-      } else {
-        header.classList.remove('scrolled');
-      }
+      header.classList.toggle('scrolled', window.scrollY > 12);
     }
     window.addEventListener('scroll', updateHeader, { passive: true });
     updateHeader();
   }
 
+  /* ── SERVICES DROPDOWN ── */
+  const navItem   = document.querySelector('.nav-item');
+  const trigger   = navItem ? navItem.querySelector(':scope > a') : null;
+  const dropdown  = navItem ? navItem.querySelector('.nav-dropdown') : null;
+
   /* ── MOBILE NAV TOGGLE ── */
-  const navToggle = document.querySelector('.nav-toggle');
+  const navToggle  = document.querySelector('.nav-toggle');
   const primaryNav = document.querySelector('.primary-nav');
+
+  function closeMobileNav() {
+    if (primaryNav) primaryNav.classList.remove('open');
+    if (navToggle)  navToggle.setAttribute('aria-expanded', 'false');
+    if (navItem)    navItem.classList.remove('open');
+    document.body.style.overflow = '';
+  }
 
   if (navToggle && primaryNav) {
     navToggle.addEventListener('click', function () {
       const isOpen = primaryNav.classList.toggle('open');
       navToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
       document.body.style.overflow = isOpen ? 'hidden' : '';
+      // Collapse dropdown when closing the drawer
+      if (!isOpen && navItem) navItem.classList.remove('open');
     });
 
     // Close on outside click
@@ -38,29 +48,30 @@
         !primaryNav.contains(e.target) &&
         !navToggle.contains(e.target)
       ) {
-        primaryNav.classList.remove('open');
-        navToggle.setAttribute('aria-expanded', 'false');
-        document.body.style.overflow = '';
+        closeMobileNav();
       }
     });
 
-    // Close on nav link click (mobile)
+    // Close nav when a regular nav link is clicked.
+    // Exclude the Services trigger (handled below) so tapping it
+    // doesn't collapse the drawer before the dropdown can open.
     primaryNav.querySelectorAll('a').forEach(function (link) {
+      const isServicesTrigger = trigger && link === trigger;
+      if (isServicesTrigger) return;
       link.addEventListener('click', function () {
-        primaryNav.classList.remove('open');
-        navToggle.setAttribute('aria-expanded', 'false');
-        document.body.style.overflow = '';
+        closeMobileNav();
       });
     });
   }
 
-  /* ── SERVICES DROPDOWN (mobile tap toggle) ── */
-  const navItem = document.querySelector('.nav-item');
-  if (navItem) {
-    const trigger = navItem.querySelector('a');
+  /* Mobile tap: toggle Services dropdown.
+     stopPropagation prevents the outside-click handler from immediately
+     closing the nav on the same tap that opened the dropdown. */
+  if (trigger && navItem) {
     trigger.addEventListener('click', function (e) {
       if (window.innerWidth <= 768) {
         e.preventDefault();
+        e.stopPropagation();
         navItem.classList.toggle('open');
       }
     });
@@ -95,7 +106,6 @@
       observer.observe(el);
     });
   } else {
-    // Fallback: show all immediately
     revealEls.forEach(function (el) {
       el.classList.add('visible');
     });
@@ -106,20 +116,19 @@
   if (contactForm) {
     contactForm.addEventListener('submit', function (e) {
       e.preventDefault();
-      const btn = contactForm.querySelector('.form-submit');
+      const btn  = contactForm.querySelector('.form-submit');
       const orig = btn ? btn.textContent : '';
 
       if (btn) {
         btn.textContent = 'Message sent — we\'ll be in touch.';
-        btn.disabled = true;
+        btn.disabled    = true;
         btn.style.opacity = '0.7';
       }
 
-      // Re-enable after 5s for demo purposes
       setTimeout(function () {
         if (btn) {
-          btn.textContent = orig;
-          btn.disabled = false;
+          btn.textContent   = orig;
+          btn.disabled      = false;
           btn.style.opacity = '';
         }
         contactForm.reset();
